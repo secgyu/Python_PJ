@@ -18,6 +18,11 @@ def get(id):
         return ("정말인가요? 그건 바위 더미입니다.\n"
                 "크고 무겁고 단순한 바위입니다.")
 
+    elif id == "BouldersKey":
+        return ("가까이 다가갑니다. 저 파란빛은 뭐지?\n"
+                "바위틈으로 손을 뻗어 무언가를 더듬습니다.\n"
+                "그것은 다름이 아니라 파랗게 빛나는 열쇠였습니다.")
+
     elif id == "Structure":
         return ("여러분은 이상한 구조물을 조사합니다.\n"
                 "안에서는 오싹하면서도 기이한 소리가 들립니다.\n"
@@ -32,6 +37,10 @@ def get(id):
     elif id == "StructureDoorNoKey":
         return ("그쪽으로 손을 내밀지만 파란빛이 번쩍이며 닫혀 버립니다!\n"
                 "계획한 대로는 잘 안 되는군요.")
+
+    elif id == "StructureDoorKey":
+        return ("손에 쥔 열쇠를 바라봅니다.\n"
+                "이 열쇠는 열쇠 구멍과 마찬가지로 파랗게 빛납니다.")
 
     elif id == "Run":
         return ("한동안 달립니다.\n"
