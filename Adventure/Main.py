@@ -6,9 +6,9 @@
 # doBeeping = 삐 소리 탐색
 # doRun = 도망
 
-
 import Strings
 import Utils
+import Inventory as inv
 
 
 def doWelcome():
@@ -21,7 +21,8 @@ def doStart():
         ["P", "바위 더미를 조사한다"],
         ["S", "구조물에 접근한다"],
         ["B", "삐 소리가 나는 곳으로 간다"],
-        ["R", "도망간다!"]
+        ["R", "도망간다!"],
+        ["I", "인벤토리"]
     ]
     choice = Utils.getUserChoice(choices)
     if choice == 'P':
@@ -32,10 +33,17 @@ def doStart():
         doBeeping()
     elif choice == 'R':
         doRun()
+    elif choice == "I":
+        inv.display()
+        doStart()
 
 
 def doBoulders():
-    print(Strings.get("Boulders"))
+    if not inv.hasStructureKey():
+        print(Strings.get("BouldersKey"))
+        inv.takeStructureKey()
+    else:
+        print(Strings.get("Boulders"))
     doStart()
 
 
@@ -60,19 +68,30 @@ def doStructure():
 
 def doStructureDoor():
     print(Strings.get("StructureDoor"))
-    print(Strings.get("StructureDoorNoKey"))
+    if inv.hasStructureKey():
+        print(Strings.get("StructureDoorKey"))
+    else:
+        print(Strings.get("StructureDoorNoKey"))
     choices = [
         ["S", "구조물로 돌아간다"],
         ["R", "도망간다!"]
     ]
+    if inv.hasStructureKey():
+        choices.insert(0, ["U", "열쇠로 문을 연다"])
     choice = Utils.getUserChoice(choices)
     if choice == 'S':
         doStructure()
     elif choice == 'R':
         doRun()
+    elif choice == 'U':
+        doEnterStructure()
 
 
 def doBeeping():
+    pass
+
+
+def doEnterStructure():
     pass
 
 
@@ -85,6 +104,7 @@ def gameOver():
     print(Strings.get("GameOver"))
 
 
+# 환영 메시지 출력하기
 doWelcome()
 # 게임 시작하기
 doStart()
