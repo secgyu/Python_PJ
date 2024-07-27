@@ -1,18 +1,18 @@
-# doWelcome = print 여러 개 이용해 게임소개 및 현재 플레이어 위치 알려줌
-# doStart = 게임 시작 장소를 정의한 함수, 텍스트와 함께 사용자의 선택을 기다리는 프롬프트 표시하고 선택에 따라 해당하는 장소로 이동
-# doBoulders = 장소 : 바위더미
-# doStructure = 장소 : 구조물
-# doStructureDoor = 장소 : 구조물 입구
-# doBeeping = 삐 소리 탐색
-# doRun = 도망
-
 import Strings
 import Utils
 import Inventory as inv
+import Player
+import random
+import Enemies
+from colorama import init, Fore
+
+p = Player.player()
+
+init()
 
 
 def doWelcome():
-    print(Strings.get("Welcome"))
+    print(Fore.GREEN + Strings.get("Welcome"))
 
 
 def doStart():
@@ -22,7 +22,10 @@ def doStart():
         ["S", "구조물에 접근한다"],
         ["B", "삐 소리가 나는 곳으로 간다"],
         ["R", "도망간다!"],
-        ["I", "인벤토리"]
+        ["I", "인벤토리"],
+        ["C", "전투"],
+        ["T", "상점"],
+        ["E", "탐험 (무작위 이벤트)"]
     ]
     choice = Utils.getUserChoice(choices)
     if choice == 'P':
@@ -36,14 +39,23 @@ def doStart():
     elif choice == "I":
         inv.display()
         doStart()
+    elif choice == 'C':
+        doCombat()
+    elif choice == 'T':
+        doStore()
+    elif choice == 'E':
+        randomEvent()
 
 
 def doBoulders():
-    if not inv.hasStructureKey():
+    p.visitBoulder()
+    if p.getBoulderVisits() == 1:
+        print(Strings.get("Boulders"))
+    elif p.getBoulderVisits() == 3:
         print(Strings.get("BouldersKey"))
         inv.takeStructureKey()
     else:
-        print(Strings.get("Boulders"))
+        print(Strings.get("Boulders2"))
     doStart()
 
 
@@ -67,11 +79,11 @@ def doStructure():
 
 
 def doStructureDoor():
-    print(Strings.get("StructureDoor"))
+    print(Fore.GREEN + Strings.get("StructureDoor"))
     if inv.hasStructureKey():
-        print(Strings.get("StructureDoorKey"))
+        print(Fore.GREEN + Strings.get("StructureDoorKey"))
     else:
-        print(Strings.get("StructureDoorNoKey"))
+        print(Fore.RED + Strings.get("StructureDoorNoKey"))
     choices = [
         ["S", "구조물로 돌아간다"],
         ["R", "도망간다!"]
@@ -96,15 +108,74 @@ def doEnterStructure():
 
 
 def doRun():
-    print(Strings.get("Run"))
-    gameOver()
+    print(Fore.GREEN + Strings.get("Run"))
+    p.died()
+    if p.isAlive():
+        doStart()
+    else:
+        gameOver()
 
 
 def gameOver():
-    print(Strings.get("GameOver"))
+    print(Fore.GREEN + Strings.get("GameOver"))
+    if Utils.inputYesNo("다시 시작하시겠습니까?"):
+        p.addLife(3)
+        p.addHealth(p.maxHealth)
+        inv.dropCoins(inv.numCoins())
+        doStart()
+    else:
+        print("게임을 종료합니다.")
 
 
-# 환영 메시지 출력하기
+def doCombat():
+    enemy = Enemies.getEnemy(random.choice(["slug", "eel", "alien"]))
+    print(f"적이 나타났습니다: {enemy['description']} (체력: {enemy['strength']})")
+    while enemy["strength"] > 0 and p.isAlive():
+        choice = input("공격[A] / 도망[R]: ").upper()
+        if choice == "A":
+            damage_to_enemy = p.attackEnemy(enemy)
+            damage_to_player = p.attack(random.randint(
+                enemy["damageMin"], enemy["damageMax"]))
+            print(f"{enemy['description']}에게 {damage_to_enemy}의 피해를 입혔습니다!")
+            print(f"{enemy['description']}에게 {damage_to_player}의 피해를 입었습니다!")
+            if p.getHealth() <= 0:
+                print("당신은 패배했습니다!")
+                p.died()
+                break
+            if enemy["strength"] <= 0:
+                print("적을 물리쳤습니다!")
+                break
+        elif choice == "R":
+            print("도망쳤습니다!")
+            break
+
+    if not p.isAlive():
+        gameOver()
+    else:
+        doStart()
+
+
+def randomEvent():
+    if Utils.randomEvent(4):
+        print("길에서 동전 100개를 발견했습니다.")
+        print("동전을 줍습니다.")
+        inv.takeCoins(100)
+    else:
+        events = ["C", "P", "S"]
+        event = random.choice(events)
+        if event == "C":
+            doCombat()
+        elif event == "P":
+            doBoulders()
+        elif event == "S":
+            doStructure()
+
+
+def doStore():
+    print("상점에 오신 것을 환영합니다!")
+    Utils.buyItem()
+    doStart()
+
+
 doWelcome()
-# 게임 시작하기
 doStart()
